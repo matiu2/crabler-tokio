@@ -33,7 +33,7 @@ extern crate crabler;
 use std::path::Path;
 
 use crabler::*;
-use surf::Url;
+use reqwest::Url;
 
 #[derive(WebScraper)]
 #[on_response(response_handler)]

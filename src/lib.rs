@@ -154,7 +154,7 @@ where
     scraper: T,
     counter: Arc<AtomicUsize>,
     workers: Vec<async_std::task::JoinHandle<()>>,
-    surf_client: surf::Client,
+    reqwest_client: reqwest::Client,
 }
 
 impl<T> Crabler<T>
@@ -168,10 +168,13 @@ where
         let workoutput_ch = Channels::new();
         let counter = Arc::new(AtomicUsize::new(0));
         let workers = vec![];
-        let surf_client = if opts.follow_redirects {
-            surf::client().with(surf::middleware::Redirect::default())
+        let reqwest_client = if opts.follow_redirects {
+            reqwest::Client::new()
         } else {
-            surf::client()
+            reqwest::Client::builder()
+                .redirect(reqwest::redirect::Policy::none())
+                .build()
+                .unwrap()
         };
 
         Crabler {
@@ -181,7 +184,7 @@ where
             scraper,
             counter,
             workers,
-            surf_client,
+            reqwest_client,
         }
     }
 
@@ -307,14 +310,9 @@ where
         let visited_links = self.visited_links.clone();
         let workinput_rx = self.workinput_ch.rx.clone();
         let workoutput_tx = self.workoutput_ch.tx.clone();
-        let surf_client = self.surf_client.clone();
+        let reqwest_client = self.reqwest_client.clone();
 
-        let worker = Worker::new(
-            visited_links,
-            workinput_rx,
-            workoutput_tx,
-            surf_client,
-        );
+        let worker = Worker::new(visited_links, workinput_rx, workoutput_tx, reqwest_client);
 
         let handle = async_std::task::spawn(async move {
             loop {
@@ -338,7 +336,7 @@ struct Worker {
     visited_links: Arc<RwLock<HashSet<String>>>,
     workinput_rx: Receiver<WorkInput>,
     workoutput_tx: Sender<WorkOutput>,
-    surf_client: surf::Client,
+    reqwest_client: reqwest::Client,
 }
 
 impl Worker {
@@ -346,13 +344,13 @@ impl Worker {
         visited_links: Arc<RwLock<HashSet<String>>>,
         workinput_rx: Receiver<WorkInput>,
         workoutput_tx: Sender<WorkOutput>,
-        surf_client: surf::Client,
+        reqwest_client: reqwest::Client,
     ) -> Self {
         Worker {
             visited_links,
             workinput_rx,
             workoutput_tx,
-            surf_client,
+            reqwest_client,
         }
     }
 
@@ -404,7 +402,7 @@ impl Worker {
 
         if !contains {
             self.visited_links.write().await.insert(url.clone());
-            let response = self.surf_client.get(&url).await?;
+            let response = self.reqwest_client.get(&url).send().await?;
 
             WorkOutput::try_from_response(response, url.clone()).await
         } else {
@@ -417,7 +415,7 @@ impl Worker {
 
         if !contains {
             // need to notify parent about work being done
-            let response = self.surf_client.get(&*url).await?.body_bytes().await?;
+            let response = self.reqwest_client.get(&*url).send().await?.bytes().await?;
             let mut dest = File::create(destination.clone()).await?;
             dest.write_all(&response).await?;
 
@@ -445,9 +443,9 @@ enum WorkOutput {
 }
 
 impl WorkOutput {
-    async fn try_from_response(mut response: surf::Response, url: String) -> Result<Self> {
+    async fn try_from_response(response: reqwest::Response, url: String) -> Result<Self> {
         let status = response.status().into();
-        let text = response.body_string().await?;
+        let text = response.text().await?;
 
         if text.is_empty() {
             error!("body is empty")

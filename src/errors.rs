@@ -14,8 +14,8 @@ pub enum CrablerError {
     #[error("failed to send workload to async channel: {0}")]
     AsyncSendError(String),
 
-    #[error("surf error {0}: {1}")]
-    SurfError(surf::StatusCode, String),
+    #[error("reqwest error {0:?}: {1}")]
+    ReqwestError(Option<reqwest::StatusCode>, String),
 
     #[error("body parsing error: {0}")]
     BodyParsing(String),
@@ -27,9 +27,9 @@ impl<T: Debug> From<SendError<T>> for CrablerError {
     }
 }
 
-impl From<surf::Error> for CrablerError {
-    fn from(err: surf::Error) -> Self {
-        Self::SurfError(err.status(), format!("{:?}", err))
+impl From<reqwest::Error> for CrablerError {
+    fn from(err: reqwest::Error) -> Self {
+        Self::ReqwestError(err.status(), format!("{:?}", err))
     }
 }
 

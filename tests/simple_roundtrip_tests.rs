@@ -39,10 +39,12 @@ async fn test_roundtrip() {
         saw_links: saw_links.clone(),
     };
 
+    println!("before");
     scraper
         .run(Opts::new().with_urls(vec!["https://www.rust-lang.org/"]))
         .await
         .unwrap();
+    println!("before");
 
     assert_eq!(visited_links.read().unwrap().len(), 1);
     println!("Found {} urls", saw_links.read().unwrap().len());
