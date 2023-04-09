@@ -16,7 +16,7 @@
 
 Asynchronous web scraper engine written in Rust.
 
-The original work and author can be found here: <https://github.com/matiu2/crabler-tokio/actions>
+The original work and author can be found here: <https://github.com/Gonzih/crabler>
 
 The main difference between crabler and crabler-tokio is that we've swapped out these dependencies:
 
