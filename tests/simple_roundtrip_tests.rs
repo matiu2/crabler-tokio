@@ -1,6 +1,4 @@
-extern crate crabler;
-
-use crabler::*;
+use crabler_tokio::*;
 use std::sync::Arc;
 use std::sync::RwLock;
 

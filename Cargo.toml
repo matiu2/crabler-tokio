@@ -21,7 +21,7 @@ async-trait = "0.1.52"
 thiserror = "1.0"
 log = { version = "0.4.14", features = ["kv_unstable"] }
 femme = "2.1.1"
-crabler_derive = "0.1.8"
+crabler-tokio_derive = "0.1.8"
 crabquery = "0.1.9"
 reqwest = { version = "0.11.16", default_features = false, features = ["gzip", "deflate", "brotli", "rustls-tls"] }
 tokio = { version = "1.27.0", features = ["macros", "net", "rt-multi-thread", "fs"] }

@@ -3,7 +3,7 @@
 //!```rust
 //!extern crate crabler;
 //!
-//!use crabler::*;
+//!use crabler_tokio::*;
 //!
 //!#[derive(WebScraper)]
 //!#[on_response(response_handler)]
@@ -49,7 +49,7 @@ use std::sync::Arc;
 use tokio::{fs::File, io::AsyncWriteExt, sync::RwLock};
 
 pub use async_trait::async_trait;
-pub use crabler_derive::WebScraper;
+pub use crabler_tokio_derive::WebScraper;
 
 #[cfg(feature = "debug")]
 fn enable_logging() {

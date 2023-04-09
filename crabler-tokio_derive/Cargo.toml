@@ -1,0 +1,20 @@
+[package]
+name = "crabler-tokio_derive"
+version = "0.1.8"
+authors = ["Max Gonzih <gonzih@gmail.com>", "Matthew Sherborne <msherborne@gmail.com>"]
+edition = "2018"
+description = "Derive macro for crabler-tokio library"
+homepage = "https://github.com/matiu2/crabler"
+repository = "https://github.com/matiu2/crabler"
+documentation = "https://docs.rs/crabler-tokio_derive"
+keywords = ["html", "css" , "scraper", "web"]
+license = "MIT"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "1.0.15"
+quote = "1.0"
+proc-macro-error = "0.4.9"
+proc-macro2 = "1.0"

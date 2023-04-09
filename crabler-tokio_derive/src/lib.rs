@@ -110,7 +110,7 @@ fn impl_web_scraper(ast: &syn::DeriveInput) -> TokenStream {
                 self,
                 opts: Opts,
             ) -> std::result::Result<(), CrablerError> {
-                use crabler::Crabler;
+                use crabler_tokio::Crabler;
 
                 let mut crabler = Crabler::new(self, &opts);
 
