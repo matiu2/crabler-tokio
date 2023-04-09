@@ -1,4 +1,4 @@
-use async_std::channel::{RecvError, SendError};
+use flume::{RecvError, SendError};
 use std::fmt::Debug;
 use std::io;
 use thiserror::Error;

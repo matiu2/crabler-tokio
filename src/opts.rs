@@ -10,8 +10,8 @@ pub struct Opts {
     pub follow_redirects: bool,
 }
 
-impl Opts {
-    pub fn new() -> Self {
+impl Default for Opts {
+    fn default() -> Self {
         Opts {
             urls: vec![],
             // proxies: vec![],
@@ -19,7 +19,9 @@ impl Opts {
             follow_redirects: true,
         }
     }
+}
 
+impl Opts {
     pub fn with_urls(self, input: Vec<&str>) -> Self {
         let mut new = self;
         new.urls = input.iter().map(|s| s.to_string()).collect();

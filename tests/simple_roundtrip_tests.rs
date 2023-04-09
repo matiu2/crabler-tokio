@@ -29,7 +29,7 @@ impl Scraper {
     }
 }
 
-#[async_std::test]
+#[tokio::test]
 async fn test_roundtrip() {
     let saw_links = Arc::new(RwLock::new(vec![]));
     let visited_links = Arc::new(RwLock::new(vec![]));
@@ -41,7 +41,7 @@ async fn test_roundtrip() {
 
     println!("before");
     scraper
-        .run(Opts::new().with_urls(vec!["https://www.rust-lang.org/"]))
+        .run(Opts::default().with_urls(vec!["https://www.rust-lang.org/"]))
         .await
         .unwrap();
     println!("before");

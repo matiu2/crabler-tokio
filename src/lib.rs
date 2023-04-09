@@ -25,11 +25,11 @@
 //!    }
 //!}
 //!
-//!#[async_std::main]
+//!#[tokio::main]
 //!async fn main() -> Result<()> {
 //!    let scraper = Scraper {};
 //!
-//!    scraper.run(Opts::new().with_urls(vec!["https://www.rust-lang.org/"])).await
+//!    scraper.run(Opts::default().with_urls(vec!["https://www.rust-lang.org/"])).await
 //!}
 //!```
 
@@ -39,16 +39,14 @@ pub use opts::*;
 mod errors;
 pub use errors::*;
 
-use async_std::channel::{unbounded, Receiver, RecvError, Sender};
-use async_std::fs::File;
-use async_std::prelude::*;
-use async_std::sync::RwLock;
 pub use crabquery::{Document, Element};
+use flume::{unbounded, Receiver, Sender};
 use log::{debug, error, info, warn};
 use std::collections::HashSet;
 use std::fmt::Debug;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
+use tokio::{fs::File, io::AsyncWriteExt, sync::RwLock};
 
 pub use async_trait::async_trait;
 pub use crabler_derive::WebScraper;
@@ -113,7 +111,9 @@ impl Response {
     pub async fn navigate(&mut self, url: String) -> Result<()> {
         debug!("Increasing counter by 1");
         self.counter.fetch_add(1, Ordering::SeqCst);
-        self.workinput_tx.send(WorkInput::Navigate(url)).await?;
+        self.workinput_tx
+            .send_async(WorkInput::Navigate(url))
+            .await?;
 
         Ok(())
     }
@@ -123,7 +123,7 @@ impl Response {
         debug!("Increasing counter by 1");
         self.counter.fetch_add(1, Ordering::SeqCst);
         self.workinput_tx
-            .send(WorkInput::Download { url, destination })
+            .send_async(WorkInput::Download { url, destination })
             .await?;
 
         Ok(())
@@ -153,7 +153,7 @@ where
     workoutput_ch: Channels<WorkOutput>,
     scraper: T,
     counter: Arc<AtomicUsize>,
-    workers: Vec<async_std::task::JoinHandle<()>>,
+    workers: Vec<tokio::task::JoinHandle<()>>,
     reqwest_client: reqwest::Client,
 }
 
@@ -190,13 +190,8 @@ where
 
     async fn shutdown(&mut self) -> Result<()> {
         for _ in self.workers.iter() {
-            self.workinput_ch.tx.send(WorkInput::Exit).await?;
+            self.workinput_ch.tx.send_async(WorkInput::Exit).await?;
         }
-
-        self.workinput_ch.tx.close();
-        self.workinput_ch.rx.close();
-        self.workoutput_ch.tx.close();
-        self.workoutput_ch.rx.close();
 
         Ok(())
     }
@@ -209,7 +204,7 @@ where
         Ok(self
             .workinput_ch
             .tx
-            .send(WorkInput::Navigate(url.to_string()))
+            .send_async(WorkInput::Navigate(url.to_string()))
             .await?)
     }
 
@@ -224,7 +219,7 @@ where
 
     async fn event_loop(&mut self) -> Result<()> {
         loop {
-            let output = self.workoutput_ch.rx.recv().await?;
+            let output = self.workoutput_ch.rx.recv_async().await?;
             let response_url;
             let response_status;
             let mut response_destination = None;
@@ -314,7 +309,7 @@ where
 
         let worker = Worker::new(visited_links, workinput_rx, workoutput_tx, reqwest_client);
 
-        let handle = async_std::task::spawn(async move {
+        let handle = tokio::task::spawn(async move {
             loop {
                 info!("🐿️ Starting http worker");
 
@@ -358,8 +353,8 @@ impl Worker {
         let workoutput_tx = self.workoutput_tx.clone();
 
         loop {
-            let workinput = self.workinput_rx.recv().await;
-            if let Err(RecvError) = workinput {
+            let workinput = self.workinput_rx.recv_async().await;
+            if workinput.is_err() {
                 continue;
             }
 
@@ -368,7 +363,7 @@ impl Worker {
 
             match payload {
                 Ok(WorkOutput::Exit) => return Ok(()),
-                _ => workoutput_tx.send(payload?).await?,
+                _ => workoutput_tx.send_async(payload?).await?,
             }
         }
     }

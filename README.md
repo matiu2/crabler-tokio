@@ -1,29 +1,51 @@
-# Crabler - Web crawler for Crabs
+# Crabler-Tokio - Web crawler for Crabs
 
 [![CI][ci-badge]][ci-url]
 [![Crates.io][crates-badge]][crates-url]
 [![docs.rs][docs-badge]][docs-url]
 [![MIT licensed][mit-badge]][mit-url]
 
-[ci-badge]: https://github.com/Gonzih/crabler/workflows/CI/badge.svg
-[ci-url]: https://github.com/Gonzih/crabler/actions
-[crates-badge]: https://img.shields.io/crates/v/crabler.svg
-[crates-url]: https://crates.io/crates/crabler
-[docs-badge]: https://docs.rs/crabler/badge.svg
-[docs-url]: https://docs.rs/crabler
+[ci-badge]: https://github.com/matiu2/crabler-tokio/workflows/CI/badge.svg
+[ci-url]: https://github.com/matiu2/crabler-tokio/actions
+[crates-badge]: https://img.shields.io/crates/v/crabler-tokio.svg
+[crates-url]: https://crates.io/crates/crabler-tokio
+[docs-badge]: https://docs.rs/crabler-tokio/badge.svg
+[docs-url]: https://docs.rs/crabler-tokio
 [mit-badge]: https://img.shields.io/badge/license-MIT-blue.svg
 [mit-url]: LICENSE
 
+Asynchronous web scraper engine written in Rust.
 
-Asynchronous web scraper engine written in rust.
+The original work and author can be found here: <https://github.com/matiu2/crabler-tokio/actions>
+
+The main difference between crabler and crabler-tokio is that we've swapped out these dependencies:
+
+ * async_std -> tokio
+ * surf -> reqwest
+
+The main motivation for this is to be closer to pure rust, and drop the requirments for libcurl and libssl.
+
+The `cargo tree` output saves a few imports:
+
+ * 488 dependencies for crabler
+ * 350 dependencies for crabler-tokio
 
 Features:
-* fully based on `async-std`
-* derive macro based api
-* struct based api
+* fully based on `tokio`
+* derive macro based API
+* struct-based API
 * stateful scraper (structs can hold state)
 * ability to download files
 * ability to schedule navigation jobs in an async manner
+* uses the `reqwest` crate for HTTP requests
+
+## Usage
+
+Add this to your `Cargo.toml`:
+
+```toml
+[dependencies]
+crabler-tokio = "0.1.0"
 
 ## Example
 
@@ -78,7 +100,7 @@ impl Scraper {
     }
 }
 
-#[async_std::main]
+#[tokio::main]
 async fn main() -> Result<()> {
     let scraper = Scraper {};
 
@@ -87,6 +109,6 @@ async fn main() -> Result<()> {
 }
 ```
 
-## Sample project
+## Sample project (for the original crabler crate)
 
 [Gonzih/apod-nasa-scraper-rs](https://github.com/Gonzih/apod-nasa-scraper-rs/)
