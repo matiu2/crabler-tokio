@@ -1,6 +1,6 @@
 [package]
 name = "crabler-tokio"
-version = "0.1.28"
+version = "0.1.29"
 authors = ["Max Gonzih <gonzih@gmail.com>", "Matthew Sherborne <msherborne@gmail.com>"]
 edition = "2018"
 description = "Web scraper for Crabs - tokio version"
@@ -16,11 +16,11 @@ license = "MIT"
 debug = []
 
 [dependencies]
-futures = "0.3.18"
-async-trait = "0.1.52"
-thiserror = "1.0"
-log = { version = "0.4.14", features = ["kv_unstable"] }
-femme = "2.1.1"
+futures = "0.3.28"
+async-trait = "0.1.68"
+thiserror = "1.0.40"
+log = { version = "0.4.17", features = ["kv_unstable"] }
+femme = "2.2.1"
 crabler-tokio_derive = "0.1.8"
 crabquery = "0.1.9"
 reqwest = { version = "0.11.16", default_features = false, features = ["gzip", "deflate", "brotli", "rustls-tls"] }
@@ -28,7 +28,7 @@ tokio = { version = "1.27.0", features = ["macros", "net", "rt-multi-thread", "f
 flume = "0.10.14"
 
 [build-dependencies]
-skeptic = "0.13"
+skeptic = "0.13.7"
 
 [dev-dependencies]
-skeptic = "0.13"
+skeptic = "0.13.7"
